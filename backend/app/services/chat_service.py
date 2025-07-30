@@ -39,7 +39,11 @@ Context from documents:
 {context}
 
 Previous conversation:
-{chat_history}"""
+{chat_history}
+
+Current question: {question}
+
+Please provide a helpful answer based on the context above:"""
         )
     
     def get_or_create_session(self, session_id: str) -> ConversationBufferMemory:
@@ -91,6 +95,8 @@ Previous conversation:
                 question=question,
                 chat_history=chat_history_str
             )
+            
+            logger.info(f"Formatted prompt for question '{question[:50]}...': {formatted_prompt[:200]}...")
             
             # Get LLM response
             llm_response = await self.llm.ainvoke(formatted_prompt)

@@ -66,6 +66,20 @@ export function useChatHistory() {
     }
   };
 
+  const startNewChat = () => {
+    try {
+      // Don't delete the current session - just start a new one
+      setMessages([]);
+      
+      // Generate new session ID
+      const newSessionId = Math.random().toString(36).substr(2, 9);
+      localStorage.setItem(SESSION_KEY, newSessionId);
+      setSessionId(newSessionId);
+    } catch (error) {
+      console.error('Error starting new chat:', error);
+    }
+  };
+
   const getAllSessions = (): string[] => {
     try {
       const sessions: string[] = [];
@@ -106,6 +120,7 @@ export function useChatHistory() {
     sessionId,
     addMessage,
     clearHistory,
+    startNewChat,
     getAllSessions,
     loadSession,
     setMessages

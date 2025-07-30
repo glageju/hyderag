@@ -11,7 +11,7 @@ import { listCollections, healthCheck } from '@/lib/api';
 import { useChatHistory } from '@/hooks/useChatHistory';
 
 export default function Home() {
-  const { messages, sessionId, addMessage, clearHistory, setMessages } = useChatHistory();
+  const { messages, sessionId, addMessage, clearHistory, startNewChat, setMessages, getAllSessions, loadSession } = useChatHistory();
   const [selectedCollection, setSelectedCollection] = useState<string>('documents');
   const [collections, setCollections] = useState<string[]>(['documents']);
   const [isLoading, setIsLoading] = useState(false);
@@ -69,13 +69,22 @@ export default function Home() {
   };
 
   const handleClearChat = () => {
-    clearHistory();
+    startNewChat();
   };
 
   const handleDocumentUploaded = () => {
     loadCollections();
-    // Trigger refresh of document list in sidebar
-    setRefreshTrigger(prev => prev + 1);
+    // Small delay to ensure backend has processed the upload
+    setTimeout(() => {
+      setRefreshTrigger(prev => prev + 1);
+    }, 500);
+  };
+
+  const handleDeleteChatSession = (deletedSessionId: string) => {
+    // If the deleted session is the current one, clear the chat
+    if (deletedSessionId === sessionId) {
+      handleClearChat();
+    }
   };
 
   return (
@@ -90,6 +99,10 @@ export default function Home() {
         onClearChat={handleClearChat}
         onDocumentUploaded={handleDocumentUploaded}
         refreshTrigger={refreshTrigger}
+        currentSessionId={sessionId}
+        onLoadSession={loadSession}
+        onDeleteSession={handleDeleteChatSession}
+        getAllSessions={getAllSessions}
       />
 
       {/* Main Content */}

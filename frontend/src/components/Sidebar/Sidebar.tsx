@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { X, FolderOpen, Trash2, Plus } from 'lucide-react';
+import { X, FolderOpen, Trash2, Plus, MessageSquarePlus } from 'lucide-react';
 import { DocumentList } from '@/components/Documents/DocumentList';
+import { ChatHistory } from '@/components/Chat/ChatHistory';
 import { cn } from '@/lib/utils';
 
 interface SidebarProps {
@@ -14,6 +15,10 @@ interface SidebarProps {
   onClearChat: () => void;
   onDocumentUploaded: () => void;
   refreshTrigger?: number;
+  currentSessionId: string;
+  onLoadSession: (sessionId: string) => void;
+  onDeleteSession: (sessionId: string) => void;
+  getAllSessions: () => string[];
 }
 
 export function Sidebar({
@@ -25,6 +30,10 @@ export function Sidebar({
   onClearChat,
   onDocumentUploaded,
   refreshTrigger,
+  currentSessionId,
+  onLoadSession,
+  onDeleteSession,
+  getAllSessions,
 }: SidebarProps) {
 
   return (
@@ -47,7 +56,7 @@ export function Sidebar({
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <h2 className="text-lg font-semibold text-gray-900">
-            Collections
+            Navigation
           </h2>
           <button
             onClick={onClose}
@@ -87,7 +96,7 @@ export function Sidebar({
         </div>
 
         {/* Documents List */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="overflow-y-auto border-b border-gray-200">
           <DocumentList
             selectedCollection={selectedCollection}
             onDocumentDeleted={onDocumentUploaded}
@@ -95,7 +104,15 @@ export function Sidebar({
           />
         </div>
 
-
+        {/* Chat History */}
+        <div className="flex-1 overflow-y-auto">
+          <ChatHistory
+            currentSessionId={currentSessionId}
+            onLoadSession={onLoadSession}
+            onDeleteSession={onDeleteSession}
+            getAllSessions={getAllSessions}
+          />
+        </div>
 
         {/* Actions */}
         <div className="p-4 border-t border-gray-200 space-y-2">
@@ -103,7 +120,7 @@ export function Sidebar({
             onClick={onClearChat}
             className="w-full flex items-center justify-center gap-2 p-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
           >
-            <Plus className="w-4 h-4" />
+            <MessageSquarePlus className="w-4 h-4" />
             New Chat
           </button>
         </div>
