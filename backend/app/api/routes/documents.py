@@ -15,10 +15,14 @@ class DocumentResponse(BaseModel):
     processing_result: dict
 
 class DocumentListItem(BaseModel):
+    id: str
     filename: str
     file_path: str
+    file_size: int
     collection_name: str
+    chunks_added: int
     upload_date: str
+    file_type: str
 
 @router.post("/upload", response_model=DocumentResponse)
 async def upload_document(
@@ -52,15 +56,34 @@ async def list_collections():
         logger.error(f"Error listing collections: {e}")
         raise HTTPException(status_code=500, detail="Error listing collections")
 
-@router.delete("/{file_path:path}")
-async def delete_document(file_path: str):
+@router.get("/", response_model=List[DocumentListItem])
+async def list_documents(collection_name: Optional[str] = Query(None, description="Filter by collection name")):
+    """List all uploaded documents"""
+    try:
+        documents = document_service.list_documents(collection_name)
+        return documents
+    except Exception as e:
+        logger.error(f"Error listing documents: {e}")
+        raise HTTPException(status_code=500, detail="Error listing documents")
+
+@router.get("/{doc_id}", response_model=DocumentListItem)
+async def get_document(doc_id: str):
+    """Get document details by ID"""
+    try:
+        document = await document_service.get_document(doc_id)
+        return document
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting document: {e}")
+        raise HTTPException(status_code=500, detail="Error getting document")
+
+@router.delete("/{doc_id}")
+async def delete_document(doc_id: str):
     """Delete a document from the system"""
     try:
-        success = await document_service.delete_document(file_path)
-        if success:
-            return {"message": "Document deleted successfully"}
-        else:
-            raise HTTPException(status_code=404, detail="Document not found")
+        result = await document_service.delete_document(doc_id)
+        return result
     except HTTPException:
         raise
     except Exception as e:

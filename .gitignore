@@ -227,8 +227,3 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/ 
-
-frontend/node_modules/
-frontend/.next/
-frontend/out/
-frontend/.swc/

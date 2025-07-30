@@ -8,19 +8,19 @@ import { Header } from '@/components/Header/Header';
 import { ChatMessage, Collection } from '@/types';
 import { generateId } from '@/lib/utils';
 import { listCollections, healthCheck } from '@/lib/api';
+import { useChatHistory } from '@/hooks/useChatHistory';
 
 export default function Home() {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const { messages, sessionId, addMessage, clearHistory, setMessages } = useChatHistory();
   const [selectedCollection, setSelectedCollection] = useState<string>('documents');
   const [collections, setCollections] = useState<string[]>(['documents']);
-  const [sessionId, setSessionId] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [apiStatus, setApiStatus] = useState<'connected' | 'disconnected' | 'checking'>('checking');
+  const [refreshTrigger, setRefreshTrigger] = useState<number>(0);
 
-  // Initialize session and check API health
+  // Initialize and check API health
   useEffect(() => {
-    setSessionId(generateId());
     checkApiHealth();
     loadCollections();
   }, []);
@@ -53,7 +53,7 @@ export default function Home() {
       timestamp: new Date(),
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    addMessage(userMessage);
   };
 
   const handleMessageResponse = (response: string, sources: any[]) => {
@@ -65,16 +65,17 @@ export default function Home() {
       sources,
     };
 
-    setMessages(prev => [...prev, assistantMessage]);
+    addMessage(assistantMessage);
   };
 
   const handleClearChat = () => {
-    setMessages([]);
-    setSessionId(generateId());
+    clearHistory();
   };
 
   const handleDocumentUploaded = () => {
     loadCollections();
+    // Trigger refresh of document list in sidebar
+    setRefreshTrigger(prev => prev + 1);
   };
 
   return (
@@ -88,6 +89,7 @@ export default function Home() {
         onCollectionChange={setSelectedCollection}
         onClearChat={handleClearChat}
         onDocumentUploaded={handleDocumentUploaded}
+        refreshTrigger={refreshTrigger}
       />
 
       {/* Main Content */}

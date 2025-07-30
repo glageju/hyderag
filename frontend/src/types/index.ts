@@ -20,10 +20,15 @@ export interface ChatResponse {
 }
 
 export interface DocumentUpload {
+  id: string;
   filename: string;
   file_path: string;
   file_size: number;
-  processing_result: {
+  collection_name: string;
+  chunks_added: number;
+  upload_date: string;
+  file_type: string;
+  processing_result?: {
     collection_name: string;
     chunks_added: number;
     document_ids: string[];

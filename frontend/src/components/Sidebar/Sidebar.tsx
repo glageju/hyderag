@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { X, FolderOpen, Trash2, Plus, Upload } from 'lucide-react';
-import { FileUpload } from '@/components/FileUpload/FileUpload';
+import { X, FolderOpen, Trash2, Plus } from 'lucide-react';
+import { DocumentList } from '@/components/Documents/DocumentList';
 import { cn } from '@/lib/utils';
 
 interface SidebarProps {
@@ -13,6 +13,7 @@ interface SidebarProps {
   onCollectionChange: (collection: string) => void;
   onClearChat: () => void;
   onDocumentUploaded: () => void;
+  refreshTrigger?: number;
 }
 
 export function Sidebar({
@@ -23,8 +24,8 @@ export function Sidebar({
   onCollectionChange,
   onClearChat,
   onDocumentUploaded,
+  refreshTrigger,
 }: SidebarProps) {
-  const [showUpload, setShowUpload] = useState(false);
 
   return (
     <>
@@ -57,7 +58,7 @@ export function Sidebar({
         </div>
 
         {/* Collections List */}
-        <div className="flex-1 p-4 space-y-2 overflow-y-auto">
+        <div className="p-4 space-y-2 border-b border-gray-200">
           {collections.map((collection) => (
             <button
               key={collection}
@@ -85,37 +86,25 @@ export function Sidebar({
           )}
         </div>
 
-        {/* Upload Section */}
-        <div className="p-4 border-t border-gray-200">
-          <button
-            onClick={() => setShowUpload(!showUpload)}
-            className="w-full flex items-center justify-center gap-2 p-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-          >
-            <Upload className="w-4 h-4" />
-            Upload Document
-          </button>
-          
-          {showUpload && (
-            <div className="mt-4">
-              <FileUpload
-                selectedCollection={selectedCollection}
-                onUploadComplete={() => {
-                  onDocumentUploaded();
-                  setShowUpload(false);
-                }}
-              />
-            </div>
-          )}
+        {/* Documents List */}
+        <div className="flex-1 overflow-y-auto">
+          <DocumentList
+            selectedCollection={selectedCollection}
+            onDocumentDeleted={onDocumentUploaded}
+            refreshTrigger={refreshTrigger}
+          />
         </div>
+
+
 
         {/* Actions */}
         <div className="p-4 border-t border-gray-200 space-y-2">
           <button
             onClick={onClearChat}
-            className="w-full flex items-center justify-center gap-2 p-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+            className="w-full flex items-center justify-center gap-2 p-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
           >
-            <Trash2 className="w-4 h-4" />
-            Clear Chat
+            <Plus className="w-4 h-4" />
+            New Chat
           </button>
         </div>
       </div>
