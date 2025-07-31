@@ -1,6 +1,6 @@
 'use client';
 
-import { Menu, RefreshCw, Zap, AlertCircle } from 'lucide-react';
+import { Menu, RefreshCw, Zap, AlertCircle, Upload } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface HeaderProps {
@@ -8,13 +8,15 @@ interface HeaderProps {
   selectedCollection: string;
   apiStatus: 'connected' | 'disconnected' | 'checking';
   onRetryConnection: () => void;
+  onMobileUpload?: () => void;
 }
 
 export function Header({ 
   onToggleSidebar, 
   selectedCollection, 
   apiStatus, 
-  onRetryConnection 
+  onRetryConnection,
+  onMobileUpload
 }: HeaderProps) {
   const getStatusIcon = () => {
     switch (apiStatus) {
@@ -65,6 +67,17 @@ export function Header({
         </div>
 
         <div className="flex items-center gap-4">
+          {/* Mobile Upload Button */}
+          {onMobileUpload && (
+            <button
+              onClick={onMobileUpload}
+              className="lg:hidden p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              title="Upload Documents"
+            >
+              <Upload className="w-5 h-5" />
+            </button>
+          )}
+
           {/* API Status */}
           <div 
             className={cn(

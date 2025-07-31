@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { flushSync } from 'react-dom';
-import { Send, Loader2, AlertCircle } from 'lucide-react';
+import { Send, Loader2, AlertCircle, Upload } from 'lucide-react';
 import { ChatMessage } from '@/types';
 import { ChatMessageComponent } from './ChatMessage';
 import { streamChatMessage } from '@/lib/api';
@@ -17,6 +17,7 @@ interface ChatInterfaceProps {
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
   isConnected: boolean;
+  onMobileUpload?: () => void;
 }
 
 export function ChatInterface({
@@ -28,6 +29,7 @@ export function ChatInterface({
   isLoading,
   setIsLoading,
   isConnected,
+  onMobileUpload,
 }: ChatInterfaceProps) {
   const [inputMessage, setInputMessage] = useState('');
   const [streamingMessage, setStreamingMessage] = useState('');
@@ -136,7 +138,7 @@ export function ChatInterface({
   return (
     <div className="flex flex-col h-full">
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
             <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mb-4">
@@ -212,6 +214,21 @@ export function ChatInterface({
       {/* Input Area */}
       <div className="border-t border-gray-200 p-4 bg-white">
         <form onSubmit={handleSubmit} className="flex gap-3">
+          {/* Mobile Upload Button */}
+          {onMobileUpload && (
+            <button
+              type="button"
+              onClick={onMobileUpload}
+              disabled={!isConnected}
+              className={cn(
+                "lg:hidden px-3 py-3 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors",
+                "disabled:bg-gray-50 disabled:cursor-not-allowed"
+              )}
+            >
+              <Upload className="w-5 h-5" />
+            </button>
+          )}
+          
           <div className="flex-1 relative">
             <textarea
               ref={inputRef}

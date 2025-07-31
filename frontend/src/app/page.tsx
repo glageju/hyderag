@@ -9,6 +9,7 @@ import { ChatMessage } from '@/types';
 import { generateId } from '@/lib/utils';
 import { listCollections, healthCheck } from '@/lib/api';
 import { useChatHistory } from '@/hooks/useChatHistory';
+import { Upload, X } from 'lucide-react';
 
 export default function Home() {
   const { messages, sessionId, addMessage, clearHistory, startNewChat, setMessages, getAllSessions, loadSession } = useChatHistory();
@@ -16,6 +17,7 @@ export default function Home() {
   const [collections, setCollections] = useState<string[]>(['documents']);
   const [isLoading, setIsLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [mobileUploadOpen, setMobileUploadOpen] = useState(false);
   const [apiStatus, setApiStatus] = useState<'connected' | 'disconnected' | 'checking'>('checking');
   const [refreshTrigger, setRefreshTrigger] = useState<number>(0);
 
@@ -88,7 +90,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-full bg-gray-50">
       {/* Sidebar */}
       <Sidebar
         isOpen={sidebarOpen}
@@ -113,12 +115,13 @@ export default function Home() {
           selectedCollection={selectedCollection}
           apiStatus={apiStatus}
           onRetryConnection={checkApiHealth}
+          onMobileUpload={() => setMobileUploadOpen(true)}
         />
 
         {/* Main Chat Area */}
-        <div className="flex-1 flex">
+        <div className="flex-1 flex overflow-hidden">
           {/* Chat Interface */}
-          <div className="flex-1 flex flex-col">
+          <div className="flex-1 flex flex-col overflow-hidden">
             <ChatInterface
               messages={messages}
               onSendMessage={handleSendMessage}
@@ -128,6 +131,7 @@ export default function Home() {
               isLoading={isLoading}
               setIsLoading={setIsLoading}
               isConnected={apiStatus === 'connected'}
+              onMobileUpload={() => setMobileUploadOpen(true)}
             />
           </div>
 
@@ -148,7 +152,37 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Mobile Upload Modal could go here */}
+      {/* Mobile Upload Modal */}
+      {mobileUploadOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 lg:hidden">
+          <div className="fixed inset-0 z-50 overflow-y-auto">
+            <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+              <div className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+                <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      Upload Documents
+                    </h3>
+                    <button
+                      onClick={() => setMobileUploadOpen(false)}
+                      className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+                    >
+                      <X className="h-6 w-6" />
+                    </button>
+                  </div>
+                  <FileUpload
+                    selectedCollection={selectedCollection}
+                    onUploadComplete={() => {
+                      handleDocumentUploaded();
+                      setMobileUploadOpen(false);
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 } 
