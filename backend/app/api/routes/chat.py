@@ -1,7 +1,9 @@
-from typing import Optional, List
+from typing import Optional, List, AsyncGenerator
 from fastapi import APIRouter, HTTPException, Query
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 import logging
+import json
 
 from app.services.chat_service import chat_service
 
@@ -14,12 +16,6 @@ class ChatMessage(BaseModel):
     session_id: Optional[str] = None
     k: int = 5  # Number of documents to retrieve
 
-class ChatResponse(BaseModel):
-    answer: str
-    sources: List[dict]
-    session_id: str
-    question: str
-
 class HypotheticalDocumentRequest(BaseModel):
     question: str
 
@@ -27,24 +23,45 @@ class HypotheticalDocumentResponse(BaseModel):
     question: str
     hypothetical_document: str
 
-@router.post("/message", response_model=ChatResponse)
-async def send_chat_message(chat_msg: ChatMessage):
-    """Send a chat message and get HYDE RAG response"""
-    try:
-        logger.info(f"Processing chat message: {chat_msg.message[:50]}...")
-        
-        response = await chat_service.get_response(
-            question=chat_msg.message,
-            collection_name=chat_msg.collection_name,
-            session_id=chat_msg.session_id,
-            k=chat_msg.k
-        )
-        
-        return ChatResponse(**response)
-        
-    except Exception as e:
-        logger.error(f"Error processing chat message: {e}")
-        raise HTTPException(status_code=500, detail=f"Error processing message: {str(e)}")
+@router.post("/stream")
+async def stream_chat_message(chat_msg: ChatMessage):
+    """Stream chat message response using HYDE RAG"""
+    
+    async def event_stream() -> AsyncGenerator[str, None]:
+        try:
+            logger.info(f"Starting streaming response for: {chat_msg.message[:50]}...")
+            
+            # Send initial status
+            yield f"data: {json.dumps({'type': 'status', 'message': 'Processing your question...'})}\n\n"
+            
+            async for chunk in chat_service.stream_response(
+                question=chat_msg.message,
+                collection_name=chat_msg.collection_name,
+                session_id=chat_msg.session_id,
+                k=chat_msg.k
+            ):
+                yield f"data: {json.dumps(chunk)}\n\n"
+            
+            # Send completion signal
+            yield f"data: {json.dumps({'type': 'done'})}\n\n"
+            
+        except Exception as e:
+            logger.error(f"Error in streaming response: {e}")
+            error_data = {
+                'type': 'error',
+                'message': f"Error processing message: {str(e)}"
+            }
+            yield f"data: {json.dumps(error_data)}\n\n"
+    
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/plain",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "Content-Type": "text/event-stream",
+        }
+    )
 
 @router.post("/hypothetical-document", response_model=HypotheticalDocumentResponse)
 async def get_hypothetical_document(request: HypotheticalDocumentRequest):

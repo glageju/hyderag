@@ -12,12 +12,7 @@ export interface DocumentSource {
   source: string;
 }
 
-export interface ChatResponse {
-  answer: string;
-  sources: DocumentSource[];
-  session_id: string;
-  question: string;
-}
+
 
 export interface DocumentUpload {
   id: string;

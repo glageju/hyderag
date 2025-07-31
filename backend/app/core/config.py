@@ -2,7 +2,37 @@ from typing import List, Optional
 from pydantic_settings import BaseSettings
 from pydantic import Field
 import os
+import logging
 from pathlib import Path
+
+# Configure logging for streaming responses
+def setup_logging():
+    """Setup logging configuration for HyDE RAG streaming"""
+    log_format = '%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s'
+    
+    # Create logs directory if it doesn't exist
+    Path("./logs").mkdir(exist_ok=True)
+    
+    # Configure root logger
+    logging.basicConfig(
+        level=logging.INFO,
+        format=log_format,
+        handlers=[
+            logging.StreamHandler(),
+            logging.FileHandler('./logs/hyderag.log'),
+            logging.FileHandler('./logs/streaming.log')  # Dedicated streaming log
+        ]
+    )
+    
+    # Set specific log levels for different components
+    logging.getLogger("app.services.chat_service").setLevel(logging.INFO)
+    logging.getLogger("app.core.hyde_retriever").setLevel(logging.INFO)
+    logging.getLogger("app.api.routes.chat").setLevel(logging.INFO)
+    
+    # Reduce noise from external libraries
+    logging.getLogger("httpx").setLevel(logging.WARNING)
+    logging.getLogger("urllib3").setLevel(logging.WARNING)
+    logging.getLogger("langchain").setLevel(logging.WARNING)
 
 class Settings(BaseSettings):
     # API Configuration
@@ -14,7 +44,7 @@ class Settings(BaseSettings):
     # Azure OpenAI Configuration
     azure_openai_api_key: str = Field(..., env="AZURE_OPENAI_API_KEY")
     azure_openai_endpoint: str = Field(..., env="AZURE_OPENAI_ENDPOINT")
-    azure_openai_api_version: str = Field(default="2024-02-15-preview", env="AZURE_OPENAI_API_VERSION")
+    azure_openai_api_version: str = Field(default="2023-12-01-preview", env="AZURE_OPENAI_API_VERSION")
     azure_openai_chat_deployment_name: str = Field(..., env="AZURE_OPENAI_CHAT_DEPLOYMENT_NAME")
     azure_openai_embedding_deployment_name: str = Field(..., env="AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME")
     
@@ -27,9 +57,7 @@ class Settings(BaseSettings):
     algorithm: str = Field(default="HS256", env="ALGORITHM")
     access_token_expire_minutes: int = Field(default=30, env="ACCESS_TOKEN_EXPIRE_MINUTES")
     
-    # LangChain Configuration
-    langchain_tracing: bool = Field(default=False, env="LANGCHAIN_TRACING_V2")
-    langchain_api_key: Optional[str] = Field(default=None, env="LANGCHAIN_API_KEY")
+
     
     class Config:
         env_file = ".env"
@@ -42,4 +70,7 @@ class Settings(BaseSettings):
         Path(self.upload_dir).mkdir(parents=True, exist_ok=True)
 
 # Global settings instance
-settings = Settings() 
+settings = Settings()
+
+# Setup logging when settings are loaded
+setup_logging() 

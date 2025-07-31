@@ -31,13 +31,13 @@ export function ChatHistory({
     try {
       setLoading(true);
       const sessionIds = getAllSessions();
-      console.log('Found session IDs:', sessionIds); // Debug log
+      
       const chatSessions: ChatSession[] = [];
 
       sessionIds.forEach(sessionId => {
         try {
           const key = `hyderag_chat_history_${sessionId}`;
-          console.log('Looking for key:', key); // Debug log
+  
           const savedHistory = localStorage.getItem(key);
           if (savedHistory) {
             const messages: ChatMessage[] = JSON.parse(savedHistory);
@@ -63,7 +63,7 @@ export function ChatHistory({
 
       // Sort by last message date (newest first)
       chatSessions.sort((a, b) => b.lastMessage.getTime() - a.lastMessage.getTime());
-      console.log('Loaded chat sessions:', chatSessions.length); // Debug log
+      
       setSessions(chatSessions);
     } catch (error) {
       console.error('Error loading chat sessions:', error);

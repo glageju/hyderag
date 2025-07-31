@@ -1,5 +1,4 @@
-from typing import List, Optional, Dict, Any
-from langchain.chains import LLMChain
+from typing import List, Optional, Dict, Any, AsyncGenerator
 from langchain.prompts import PromptTemplate
 from langchain_openai import AzureChatOpenAI, AzureOpenAIEmbeddings
 from langchain_community.vectorstores import Chroma
@@ -15,12 +14,14 @@ class HYDERetrieverService:
     """HYDE (Hypothetical Document Embeddings) Retriever Service"""
     
     def __init__(self):
+        
         self.llm = AzureChatOpenAI(
             api_key=settings.azure_openai_api_key,
             azure_endpoint=settings.azure_openai_endpoint,
             api_version=settings.azure_openai_api_version,
             deployment_name=settings.azure_openai_chat_deployment_name,
-            temperature=0.0
+            temperature=0.0,
+            timeout=30  # Add timeout
         )
         self.embeddings = AzureOpenAIEmbeddings(
             api_key=settings.azure_openai_api_key,
@@ -72,18 +73,26 @@ Document passage:"""
     async def generate_hypothetical_document(self, query: str) -> str:
         """Generate hypothetical document for the given query"""
         try:
-            # Create LLM chain for generating hypothetical documents
-            hyde_chain = LLMChain(
-                llm=self.llm, 
-                prompt=self.hyde_prompt,
-                verbose=settings.debug
-            )
+            # Format the prompt directly
+            formatted_prompt = self.hyde_prompt.format(question=query)
             
-            # Generate hypothetical document
-            hypothetical_doc = await hyde_chain.arun(question=query)
+            logger.info(f"Calling LLM for hypothetical document generation...")
+            logger.info(f"Prompt: {formatted_prompt[:200]}...")
             
-            logger.info(f"Generated hypothetical document for query: {query[:50]}...")
-            return hypothetical_doc.strip()
+            # Use LLM directly for better control
+            try:
+                response = await self.llm.ainvoke(formatted_prompt)
+                
+                # Extract the response text
+                hypothetical_doc = response if isinstance(response, str) else response.content
+                
+                logger.info(f"Generated hypothetical document for query: {query[:50]}...")
+                logger.info(f"Hypothetical document length: {len(hypothetical_doc)} characters")
+                return hypothetical_doc.strip()
+            except Exception as e:
+                logger.error(f"Error generating hypothetical document: {e}")
+                logger.error(f"LLM configuration: endpoint={settings.azure_openai_endpoint}, deployment={settings.azure_openai_chat_deployment_name}")
+                raise
             
         except Exception as e:
             logger.error(f"Error generating hypothetical document: {e}")
@@ -121,14 +130,89 @@ Document passage:"""
             logger.error(f"Error in HYDE retrieval: {e}")
             raise
     
+    async def stream_retrieve_documents(
+        self, 
+        query: str, 
+        collection_name: str = "documents",
+        k: int = 5
+    ) -> AsyncGenerator[Dict[str, Any], None]:
+        """Stream HYDE retrieval process with intermediate updates"""
+        try:
+            # Setup vector store if not already done
+            if not self.vector_store:
+                self.setup_vector_store(collection_name)
+            
+            logger.info(f"Starting HYDE streaming retrieval for: {query[:50]}...")
+            
+            # Step 1: Generate hypothetical document with streaming updates
+            yield {
+                'type': 'status',
+                'message': 'Creating hypothetical document...',
+                'step': 'hyde_document_generation'
+            }
+            
+            hypothetical_doc = await self.generate_hypothetical_document(query)
+            
+            logger.info(f"Generated hypothetical document: {hypothetical_doc[:100]}...")
+            
+            yield {
+                'type': 'status',
+                'message': 'Hypothetical document created',
+                'step': 'hyde_document_complete',
+                'preview': hypothetical_doc[:200] + "..." if len(hypothetical_doc) > 200 else hypothetical_doc
+            }
+            
+            # Step 2: Embed the hypothetical document
+            yield {
+                'type': 'status',
+                'message': 'Creating embedding for hypothetical document...',
+                'step': 'embedding_generation'
+            }
+            
+            hypothetical_embedding = await self.embeddings.aembed_query(hypothetical_doc)
+            
+            logger.info(f"Generated embedding for hypothetical document (dimension: {len(hypothetical_embedding)})")
+            
+            yield {
+                'type': 'status',
+                'message': 'Embedding created, searching for similar documents...',
+                'step': 'similarity_search'
+            }
+            
+            # Step 3: Search for similar documents
+            similar_docs = self.vector_store.similarity_search_by_vector(
+                hypothetical_embedding,
+                k=k
+            )
+            
+            logger.info(f"HYDE streaming retrieval complete: {len(similar_docs)} documents found")
+            
+            yield {
+                'type': 'status',
+                'message': f'Found {len(similar_docs)} relevant documents',
+                'step': 'search_complete',
+                'documents_found': len(similar_docs),
+                'sources': [doc.metadata.get("source_file", "Unknown") for doc in similar_docs]
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in HYDE streaming retrieval: {e}")
+            yield {
+                'type': 'error',
+                'message': f"Error in document retrieval: {str(e)}",
+                'step': 'retrieval_error'
+            }
+
     def get_hypothetical_document(self, query: str) -> str:
         """Generate hypothetical document for debugging/inspection (synchronous version)"""
         try:
-            hyde_chain = LLMChain(llm=self.llm, prompt=self.hyde_prompt)
-            hypothetical_doc = hyde_chain.run(question=query)
+            # Format the prompt directly
+            formatted_prompt = self.hyde_prompt.format(question=query)
             
+            # Use LLM directly for better control
+            response = self.llm.invoke(formatted_prompt)
+            hypothetical_doc = response if isinstance(response, str) else response.content
             return hypothetical_doc.strip()
-            
         except Exception as e:
             logger.error(f"Error generating hypothetical document: {e}")
             raise

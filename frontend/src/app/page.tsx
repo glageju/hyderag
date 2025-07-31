@@ -5,7 +5,7 @@ import { ChatInterface } from '@/components/Chat/ChatInterface';
 import { FileUpload } from '@/components/FileUpload/FileUpload';
 import { Sidebar } from '@/components/Sidebar/Sidebar';
 import { Header } from '@/components/Header/Header';
-import { ChatMessage, Collection } from '@/types';
+import { ChatMessage } from '@/types';
 import { generateId } from '@/lib/utils';
 import { listCollections, healthCheck } from '@/lib/api';
 import { useChatHistory } from '@/hooks/useChatHistory';
@@ -141,6 +141,8 @@ export default function Home() {
                 selectedCollection={selectedCollection}
                 onUploadComplete={handleDocumentUploaded}
               />
+              
+
             </div>
           </div>
         </div>

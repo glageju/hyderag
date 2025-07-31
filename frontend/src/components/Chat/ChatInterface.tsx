@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { flushSync } from 'react-dom';
 import { Send, Loader2, AlertCircle } from 'lucide-react';
 import { ChatMessage } from '@/types';
 import { ChatMessageComponent } from './ChatMessage';
-import { sendChatMessage } from '@/lib/api';
+import { streamChatMessage } from '@/lib/api';
 import { cn } from '@/lib/utils';
 
 interface ChatInterfaceProps {
@@ -29,13 +30,23 @@ export function ChatInterface({
   isConnected,
 }: ChatInterfaceProps) {
   const [inputMessage, setInputMessage] = useState('');
+  const [streamingMessage, setStreamingMessage] = useState('');
+  const [currentStep, setCurrentStep] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const accumulatedTextRef = useRef('');
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Auto-scroll during streaming
+  useEffect(() => {
+    if (streamingMessage || currentStep) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [streamingMessage, currentStep]);
 
   // Focus input on mount
   useEffect(() => {
@@ -51,18 +62,61 @@ export function ChatInterface({
     setInputMessage('');
     onSendMessage(message);
     setIsLoading(true);
+    setStreamingMessage('');
+    setCurrentStep('');
+    accumulatedTextRef.current = '';
 
     try {
-      const response = await sendChatMessage(
+      await streamChatMessage(
         message,
         selectedCollection,
         sessionId,
-        5
+        5,
+        // onChunk callback
+        (chunk) => {
+          if (chunk.type === 'status') {
+            setCurrentStep(chunk.message);
+          } else if (chunk.type === 'token') {
+            // Accumulate tokens progressively
+            accumulatedTextRef.current += chunk.content;
+            
+            // Force immediate update using flushSync
+            flushSync(() => {
+              setStreamingMessage(accumulatedTextRef.current);
+            });
+          } else if (chunk.type === 'final_response') {
+            setStreamingMessage('');
+            setCurrentStep('');
+            onMessageResponse(chunk.answer, chunk.sources);
+          } else if (chunk.type === 'error') {
+            setStreamingMessage('');
+            setCurrentStep('');
+            onMessageResponse(
+              `Error: ${chunk.message}`,
+              []
+            );
+          }
+        },
+        // onComplete callback
+        (fullResponse, sources, sessionId) => {
+          setStreamingMessage('');
+          setCurrentStep('');
+        },
+        // onError callback
+        (error) => {
+          console.error('Streaming error:', error);
+          setStreamingMessage('');
+          setCurrentStep('');
+          onMessageResponse(
+            'Sorry, I encountered an error while processing your message. Please try again.',
+            []
+          );
+        }
       );
-      
-      onMessageResponse(response.answer, response.sources);
     } catch (error) {
       console.error('Error sending message:', error);
+      setStreamingMessage('');
+      setCurrentStep('');
       onMessageResponse(
         'Sorry, I encountered an error while processing your message. Please try again.',
         []
@@ -107,15 +161,47 @@ export function ChatInterface({
               <ChatMessageComponent key={message.id} message={message} />
             ))}
             {isLoading && (
-              <div className="flex items-center gap-3 text-gray-500">
-                <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                </div>
-                <div className="flex gap-1">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                </div>
+              <div className="space-y-3">
+                {/* Status indicator */}
+                {currentStep && (
+                  <div className="flex items-center gap-3 text-blue-600 bg-blue-50 p-3 rounded-lg">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span className="text-sm font-medium">{currentStep}</span>
+                  </div>
+                )}
+                
+                {/* Streaming response */}
+                {streamingMessage && (
+                  <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                    <div className="flex gap-3">
+                      <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <div className="w-4 h-4 bg-primary-600 rounded-full animate-pulse"></div>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="prose prose-sm max-w-none">
+                          <p className="whitespace-pre-wrap">
+                            {streamingMessage}
+                            <span className="inline-block w-2 h-4 bg-primary-600 animate-pulse ml-1"></span>
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Default loading indicator */}
+                {!currentStep && !streamingMessage && (
+                  <div className="flex items-center gap-3 text-gray-500">
+                    <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    </div>
+                    <div className="flex gap-1">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </>
