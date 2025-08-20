@@ -2,7 +2,7 @@
 name = "hyderag-backend"
 version = "0.1.0"
 description = "HYDE RAG Chat with Documents Backend"
-authors = [{name = "Your Name", email = "your.email@example.com"}]
+authors = [{name = "Gautam Lageja", email = "gautam.lageja@gmail.com"}]
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
