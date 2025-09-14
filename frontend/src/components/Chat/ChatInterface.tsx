@@ -214,21 +214,6 @@ export function ChatInterface({
       {/* Input Area */}
       <div className="border-t border-gray-200 p-4 bg-white">
         <form onSubmit={handleSubmit} className="flex gap-3">
-          {/* Mobile Upload Button */}
-          {onMobileUpload && (
-            <button
-              type="button"
-              onClick={onMobileUpload}
-              disabled={!isConnected}
-              className={cn(
-                "lg:hidden px-3 py-3 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors",
-                "disabled:bg-gray-50 disabled:cursor-not-allowed"
-              )}
-            >
-              <Upload className="w-5 h-5" />
-            </button>
-          )}
-          
           <div className="flex-1 relative">
             <textarea
               ref={inputRef}
@@ -263,6 +248,20 @@ export function ChatInterface({
               <Send className="w-5 h-5" />
             )}
           </button>
+          
+          {onMobileUpload && (
+            <button
+              type="button"
+              onClick={onMobileUpload}
+              disabled={!isConnected}
+              className={cn(
+                "lg:hidden px-3 py-3 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors",
+                "disabled:bg-gray-50 disabled:cursor-not-allowed"
+              )}
+            >
+              <Upload className="w-5 h-5" />
+            </button>
+          )}
         </form>
         
         {!isConnected && (
