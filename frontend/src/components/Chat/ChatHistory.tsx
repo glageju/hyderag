@@ -112,9 +112,9 @@ export function ChatHistory({
     return (
       <div className="p-4">
         <div className="animate-pulse space-y-3">
-          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-          <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+          <div className="h-4 bg-gray-200 rounded w-3/4 dark:bg-gray-700"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2 dark:bg-gray-700"></div>
+          <div className="h-4 bg-gray-200 rounded w-2/3 dark:bg-gray-700"></div>
         </div>
       </div>
     );
@@ -122,7 +122,7 @@ export function ChatHistory({
 
   if (sessions.length === 0) {
     return (
-      <div className="p-4 text-center text-gray-500">
+      <div className="p-4 text-center text-gray-500 dark:text-gray-400">
         <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
         <p className="text-sm">No chat history yet</p>
         <p className="text-xs mt-1">Start a conversation to see it here</p>
@@ -132,7 +132,7 @@ export function ChatHistory({
 
   return (
     <div className="space-y-2">
-      <h3 className="px-4 py-2 text-sm font-medium text-gray-700 border-b">
+      <h3 className="px-4 py-2 text-sm font-medium text-gray-700 border-b dark:text-gray-300 dark:border-gray-700">
         Chat History ({sessions.length})
       </h3>
       <div className="max-h-64 overflow-y-auto">
@@ -140,18 +140,18 @@ export function ChatHistory({
           <div
             key={session.sessionId}
             onClick={() => onLoadSession(session.sessionId)}
-            className={`mx-2 p-3 rounded-lg cursor-pointer transition-colors group hover:bg-gray-50 ${
+            className={`mx-2 p-3 rounded-lg cursor-pointer transition-colors group hover:bg-gray-50 dark:hover:bg-gray-700 ${
               session.sessionId === currentSessionId 
-                ? 'bg-blue-50 border border-blue-200' 
+                ? 'bg-blue-50 border border-blue-200 dark:bg-blue-900/20 dark:border-blue-700' 
                 : 'border border-transparent'
             }`}
           >
             <div className="flex items-start justify-between">
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">
+                <p className="text-sm font-medium text-gray-900 truncate dark:text-gray-100">
                   {session.title}
                 </p>
-                <div className="flex items-center mt-1 text-xs text-gray-500">
+                <div className="flex items-center mt-1 text-xs text-gray-500 dark:text-gray-400">
                   <Clock className="h-3 w-3 mr-1" />
                   <span>{formatRelativeTime(session.lastMessage)}</span>
                   <span className="mx-1">•</span>
@@ -160,7 +160,7 @@ export function ChatHistory({
               </div>
               <button
                 onClick={(e) => handleDeleteSession(session.sessionId, e)}
-                className="ml-2 p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-red-100 hover:text-red-600 transition-all"
+                className="ml-2 p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-red-100 hover:text-red-600 transition-all dark:hover:bg-red-900/20 dark:hover:text-red-400"
                 title="Delete chat session"
               >
                 <Trash2 className="h-3 w-3" />

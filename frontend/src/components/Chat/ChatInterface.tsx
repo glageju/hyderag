@@ -141,17 +141,17 @@ export function ChatInterface({
       <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
-            <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mb-4">
-              <Send className="w-8 h-8 text-primary-600" />
+            <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mb-4 dark:bg-primary-900/20">
+              <Send className="w-8 h-8 text-primary-600 dark:text-primary-400" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2 dark:text-gray-100">
               Start a conversation
             </h3>
-            <p className="text-gray-500 max-w-md">
+            <p className="text-gray-500 max-w-md dark:text-gray-400">
               Ask questions about your documents. I'll use the HYDE RAG technique to find the most relevant information.
             </p>
             {!isConnected && (
-              <div className="mt-4 flex items-center gap-2 text-red-600 bg-red-50 px-4 py-2 rounded-lg">
+              <div className="mt-4 flex items-center gap-2 text-red-600 bg-red-50 px-4 py-2 rounded-lg dark:text-red-400 dark:bg-red-900/20">
                 <AlertCircle className="w-4 h-4" />
                 <span className="text-sm">Not connected to backend</span>
               </div>
@@ -166,7 +166,7 @@ export function ChatInterface({
               <div className="space-y-3">
                 {/* Status indicator */}
                 {currentStep && (
-                  <div className="flex items-center gap-3 text-blue-600 bg-blue-50 p-3 rounded-lg">
+                  <div className="flex items-center gap-3 text-blue-600 bg-blue-50 p-3 rounded-lg dark:text-blue-400 dark:bg-blue-900/20">
                     <Loader2 className="w-4 h-4 animate-spin" />
                     <span className="text-sm font-medium">{currentStep}</span>
                   </div>
@@ -174,16 +174,16 @@ export function ChatInterface({
                 
                 {/* Streaming response */}
                 {streamingMessage && (
-                  <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                  <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm dark:bg-gray-800 dark:border-gray-700">
                     <div className="flex gap-3">
-                      <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0">
-                        <div className="w-4 h-4 bg-primary-600 rounded-full animate-pulse"></div>
+                      <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0 dark:bg-primary-900/20">
+                        <div className="w-4 h-4 bg-primary-600 rounded-full animate-pulse dark:bg-primary-400"></div>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="prose prose-sm max-w-none">
-                          <p className="whitespace-pre-wrap">
+                        <div className="prose prose-sm max-w-none dark:prose-invert">
+                          <p className="whitespace-pre-wrap text-gray-900 dark:text-gray-100">
                             {streamingMessage}
-                            <span className="inline-block w-2 h-4 bg-primary-600 animate-pulse ml-1"></span>
+                            <span className="inline-block w-2 h-4 bg-primary-600 animate-pulse ml-1 dark:bg-primary-400"></span>
                           </p>
                         </div>
                       </div>
@@ -193,14 +193,14 @@ export function ChatInterface({
                 
                 {/* Default loading indicator */}
                 {!currentStep && !streamingMessage && (
-                  <div className="flex items-center gap-3 text-gray-500">
-                    <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                  <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
+                    <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center dark:bg-gray-700">
                       <Loader2 className="w-4 h-4 animate-spin" />
                     </div>
                     <div className="flex gap-1">
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce dark:bg-gray-500"></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce dark:bg-gray-500" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce dark:bg-gray-500" style={{ animationDelay: '0.2s' }}></div>
                     </div>
                   </div>
                 )}
@@ -212,7 +212,8 @@ export function ChatInterface({
       </div>
 
       {/* Input Area */}
-      <div className="border-t border-gray-200 p-4 bg-white">
+      <div className="border-t border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+        <div className="p-4 space-y-2">
         <form onSubmit={handleSubmit} className="flex gap-3">
           <div className="flex-1 relative">
             <textarea
@@ -228,8 +229,8 @@ export function ChatInterface({
               disabled={!isConnected || isLoading}
               className={cn(
                 "w-full resize-none border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent",
-                "min-h-[52px] max-h-32",
-                (!isConnected || isLoading) && "bg-gray-50 cursor-not-allowed"
+                "min-h-[52px] max-h-32 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400",
+                (!isConnected || isLoading) && "bg-gray-50 cursor-not-allowed dark:bg-gray-600"
               )}
               rows={1}
             />
@@ -239,7 +240,8 @@ export function ChatInterface({
             disabled={!inputMessage.trim() || isLoading || !isConnected}
             className={cn(
               "px-4 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors",
-              "disabled:bg-gray-300 disabled:cursor-not-allowed"
+              "dark:bg-primary-500 dark:hover:bg-primary-600 dark:ring-offset-gray-800",
+              "disabled:bg-gray-300 disabled:cursor-not-allowed dark:disabled:bg-gray-600"
             )}
           >
             {isLoading ? (
@@ -256,7 +258,8 @@ export function ChatInterface({
               disabled={!isConnected}
               className={cn(
                 "lg:hidden px-3 py-3 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors",
-                "disabled:bg-gray-50 disabled:cursor-not-allowed"
+                "dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 dark:ring-offset-gray-800",
+                "disabled:bg-gray-50 disabled:cursor-not-allowed dark:disabled:bg-gray-600"
               )}
             >
               <Upload className="w-5 h-5" />
@@ -265,11 +268,12 @@ export function ChatInterface({
         </form>
         
         {!isConnected && (
-          <p className="text-sm text-red-600 mt-2 flex items-center gap-2">
+          <p className="text-sm text-red-600 flex items-center gap-2 dark:text-red-400">
             <AlertCircle className="w-4 h-4" />
             Please check your backend connection
           </p>
         )}
+        </div>
       </div>
     </div>
   );

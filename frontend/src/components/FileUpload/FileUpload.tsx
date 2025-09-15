@@ -105,20 +105,20 @@ export function FileUpload({ selectedCollection, onUploadComplete }: FileUploadP
         className={cn(
           "border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors",
           isDragActive
-            ? "border-primary-400 bg-primary-50"
-            : "border-gray-300 hover:border-gray-400"
+            ? "border-primary-400 bg-primary-50 dark:border-primary-500 dark:bg-primary-900/20"
+            : "border-gray-300 hover:border-gray-400 dark:border-gray-600 dark:hover:border-gray-500"
         )}
       >
         <input {...getInputProps()} />
-        <Upload className="w-8 h-8 mx-auto mb-3 text-gray-400" />
+        <Upload className="w-8 h-8 mx-auto mb-3 text-gray-400 dark:text-gray-500" />
         {isDragActive ? (
-          <p className="text-primary-600">Drop the files here...</p>
+          <p className="text-primary-600 dark:text-primary-400">Drop the files here...</p>
         ) : (
           <div>
-            <p className="text-gray-600 mb-2">
+            <p className="text-gray-600 mb-2 dark:text-gray-300">
               <span className="font-medium">Click to upload</span> or drag and drop
             </p>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               PDF, DOCX, DOC, TXT files supported
             </p>
           </div>
@@ -126,7 +126,7 @@ export function FileUpload({ selectedCollection, onUploadComplete }: FileUploadP
       </div>
 
       {/* Collection Info */}
-      <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+      <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg dark:text-gray-300 dark:bg-gray-700">
         <strong>Collection:</strong> {selectedCollection}
       </div>
 
@@ -134,12 +134,12 @@ export function FileUpload({ selectedCollection, onUploadComplete }: FileUploadP
       {uploads.length > 0 && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h4 className="text-sm font-medium text-gray-900">
+            <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">
               Upload Status ({uploads.length})
             </h4>
             <button
               onClick={clearUploads}
-              className="text-xs text-gray-500 hover:text-gray-700"
+              className="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
             >
               Clear
             </button>
@@ -149,15 +149,15 @@ export function FileUpload({ selectedCollection, onUploadComplete }: FileUploadP
             {uploads.map((upload, index) => (
               <div
                 key={index}
-                className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
+                className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg dark:bg-gray-700"
               >
                 {getStatusIcon(upload.status)}
                 <File className="w-4 h-4 text-gray-400 flex-shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">
+                  <p className="text-sm font-medium text-gray-900 truncate dark:text-gray-100">
                     {upload.file.name}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
                     {formatFileSize(upload.file.size)}
                   </p>
                   {upload.status === 'error' && upload.error && (
@@ -178,7 +178,7 @@ export function FileUpload({ selectedCollection, onUploadComplete }: FileUploadP
       )}
 
       {/* Supported Types */}
-      <div className="text-xs text-gray-500">
+      <div className="text-xs text-gray-500 dark:text-gray-400">
         <strong>Supported formats:</strong> PDF, Microsoft Word (DOCX, DOC), Plain Text (TXT)
       </div>
     </div>
