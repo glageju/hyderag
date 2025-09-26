@@ -2,6 +2,27 @@
 
 A modern chat-with-documents application that uses the **HYDE (Hypothetical Document Embeddings) RAG** technique to provide intelligent document search and question-answering capabilities.
 
+
+This project was developed as an experiment to evaluate how effectively a modern AI-powered IDE (Cursor) can translate high-level instructions into a fully functional application. The result is a robust implementation of the HYDE (Hypothetical Document Embeddings) Retrieval-Augmented Generation (RAG) technique, which significantly enhances document search and question-answering capabilities.
+
+**What is HYDE?**
+
+HYDE (Hypothetical Document Embeddings) is a retrieval technique that improves search relevance by generating a hypothetical answer to a user's query, embedding that answer, and then using the embedding to find the most relevant real documents. This approach bridges the gap between user intent and document retrieval, making it especially effective for open-ended or complex questions.
+
+- [Read paper: Precise Zero-Shot Dense Retrieval without Relevance Labels](https://arxiv.org/pdf/2212.10496)
+
+**How HYDE Works (Visual Overview):**
+
+![HYDE Technique Overview](https://files.readme.io/2d00628-Untitled_2.png)
+
+*The diagram above illustrates the HYDE process:*
+1. **User Query:** The user submits a question.
+2. **Hypothetical Answer Generation:** The system generates a hypothetical document that would answer the question.
+3. **Embedding:** The hypothetical answer is embedded using a language model.
+4. **Vector Search:** The embedding is used to search for similar real documents in the vector database.
+5. **Context Retrieval:** Relevant document chunks are retrieved and used to generate the final answer.
+
+
 ## 🚀 Features
 
 - **HYDE RAG Technique**: Advanced retrieval method that generates hypothetical documents to improve search relevance
